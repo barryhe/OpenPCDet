@@ -97,7 +97,7 @@ class NuScenesDataset(DatasetTemplate):
         sweep_points_list = [points]
         sweep_times_list = [np.zeros((points.shape[0], 1))]
         if self.dataset_cfg.get('CONSECUTIVE_SWEEPS', False):
-            for k in range(max_sweeps-1):
+            for k in range(min(max_sweeps-1,len(info['sweeps']))):
                 points_sweep, times_sweep = self.get_sweep(info['sweeps'][k])
                 point_indices = list(range(len(points_sweep)))
 
