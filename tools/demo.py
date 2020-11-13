@@ -1,8 +1,10 @@
 import argparse
 import glob
+import pickle
 from pathlib import Path
+#from pyvirtualdisplay import Display
 
-import mayavi.mlab as mlab
+#import mayavi.mlab as mlab
 import numpy as np
 import torch
 
@@ -10,7 +12,7 @@ from pcdet.config import cfg, cfg_from_yaml_file
 from pcdet.datasets import DatasetTemplate
 from pcdet.models import build_network, load_data_to_gpu
 from pcdet.utils import common_utils
-from visual_utils import visualize_utils as V
+#from visual_utils import visualize_utils as V
 
 
 class DemoDataset(DatasetTemplate):
@@ -80,6 +82,9 @@ def main():
     )
     logger.info(f'Total number of samples: \t{len(demo_dataset)}')
 
+   # display = Display(visible=0, size =(1280, 1024))
+   # display.start()
+
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=demo_dataset)
     model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=True)
     model.cuda()
@@ -91,14 +96,22 @@ def main():
             load_data_to_gpu(data_dict)
             pred_dicts, _ = model.forward(data_dict)
 
-            V.draw_scenes(
-                points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
-                ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
-            )
-            mlab.savefig(args.save)
+          #  V.draw_scenes(
+          #      points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
+          #      ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
+          #  )
+            boxes_file = open(args.save + '_boxes','wb')
+            scores_file = open(args.save + '_scores','wb')
+            labels_file = open(args.save + '_labels','wb')
+            pickle.dump(pred_dicts[0]['pred_boxes'].cpu().numpy(),boxes_file,protocol=4)
+            pickle.dump(pred_dicts[0]['pred_scores'].cpu().numpy(),scores_file,protocol=4)
+            pickle.dump(pred_dicts[0]['pred_labels'].cpu().numpy(),labels_file,protocol=4)
+            boxes_file.close()
+            scores_file.close()
+            labels_file.close()
 
     logger.info('Demo done.')
-
+   # display.stop()
 
 if __name__ == '__main__':
     main()
