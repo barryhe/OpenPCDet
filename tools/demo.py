@@ -61,6 +61,7 @@ def parse_config():
                         help='specify the point cloud data file or directory')
     parser.add_argument('--ckpt', type=str, default=None, help='specify the pretrained model')
     parser.add_argument('--ext', type=str, default='.bin', help='specify the extension of your point cloud data file')
+    parser.add_argument('--save', type=str, default='fig.png', help='specify the file location to save to')
 
     args = parser.parse_args()
 
@@ -94,7 +95,7 @@ def main():
                 points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
                 ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
             )
-            mlab.show(stop=True)
+            mlab.savefig(args.save)
 
     logger.info('Demo done.')
 
