@@ -262,7 +262,7 @@ class AnchorHeadTemplate(nn.Module):
             dir_rot = common_utils.limit_period(
                 batch_box_preds[..., 6] - dir_offset, dir_limit_offset, period
             )
-            batch_box_preds[..., 6] = dir_rot + dir_offset + period * dir_labels.to(batch_box_preds.dtype)
+            batch_box_preds[..., 6] = dir_rot + dir_offset + period * dir_s.to(batch_box_preds.dtype)
 
         if isinstance(self.box_coder, box_coder_utils.PreviousResidualDecoder):
             batch_box_preds[..., 6] = common_utils.limit_period(
@@ -273,3 +273,12 @@ class AnchorHeadTemplate(nn.Module):
 
     def forward(self, **kwargs):
         raise NotImplementedError
+        
+    def get_output(self):
+        batch_size = int(cls_preds.shape[0])
+        cls_preds = self.forward_ret_dict['cls_preds']
+        box_preds = self.forward_ret_dict['box_preds']
+        batch_cls_preds, batch_box_preds = generate_predicted_boxes(batch_size, cls_preds, box_preds)
+        results_dict = { box_preds: batch_box_preds,
+                         cls_preds: batch_cls_preds}
+        return results_dict
